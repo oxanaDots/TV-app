@@ -3,6 +3,9 @@ const { getDefaultConfig } = require('expo/metro-config');
 
 const config = getDefaultConfig(__dirname);
 
+config.resolver.sourceExts.push('cjs');
+config.resolver.unstable_enablePackageExports = false;
+
 // When enabled, the optional code below will allow Metro to resolve
 // and bundle source files with TV-specific extensions
 // (e.g., *.ios.tv.tsx, *.android.tv.tsx, *.tv.tsx)
@@ -22,3 +25,4 @@ if (process.env?.EXPO_TV === '1') {
  */
 
 module.exports = config;
+// metro.config.js

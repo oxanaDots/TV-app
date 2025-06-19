@@ -1,34 +1,51 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import styles  from './styles';
-import { collection, setDoc, getDocs, doc } from 'firebase/firestore';
+import { collection, updateDoc, getDocs, doc, where, query } from 'firebase/firestore';
 import { db } from './firebase';
+import { getAuth } from 'firebase/auth';
+import { useNavigation } from '@react-navigation/native';
 
 function EnterCodeScreen() {
+    const authentication = getAuth()
+    const user = authentication.currentUser
+    const navigation = useNavigation()
     const [code, setCode] = useState()
     const [codeStatus, setCodeStatus] = useState(false)
 
-    function handleChange(text){
+    async function handleChange(text){
+
+       setCode(text)
+
         if (text.length === 6){
-            setCodeStatus(true)
+            const match = await checkCode(text)
+            setCodeStatus(match)
+
         } else{
             setCodeStatus(false)
             
         }
-        setCode(text)
+     
     }
 
     async function checkCode(code){
+
         try{
 
-            const querry = querry(collection(collection(db,  'sessions'), where ('code', '==', code)))
+            const querry = query(collection(db,  'sessions'), where ('code', '==', code))
             const data = await getDocs(querry)
+            
 
-            if (!data.empty){
-                 const sessionsDoc = data.docs[0]
-                 await updateDoc(doc(db, 'sessions', sessionsDoc.id)),{
+            if (!data.empty ){
+                const sessionsDoc = data.docs[0]
+                const sessionData = sessionsDoc.data()
+                if(sessionData.userId === user.uid){
+                     await updateDoc(doc(db, 'sessions', sessionsDoc.id),{
                     connected: true
-                 }
+                 })
+                 return true
+                }
+                
             }
 
         }catch (err){
@@ -56,7 +73,7 @@ function EnterCodeScreen() {
   
 
 {codeStatus === true ?
-<TouchableOpacity style={currentStyles.successButton}>
+<TouchableOpacity style={currentStyles.successButton} onPress={()=> navigation.navigate('Gallery')}>
     <Text style={styles.buttonText}>Next</Text>
 </TouchableOpacity>:
 ''
