@@ -27,7 +27,7 @@ function EnterCodeScreen() {
             if (!data.empty){
                  const sessionsDoc = data.docs[0]
                  await updateDoc(doc(db, 'sessions', sessionsDoc.id)),{
-                    connected:true
+                    connected: true
                  }
             }
 
