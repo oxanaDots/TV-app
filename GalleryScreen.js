@@ -6,58 +6,25 @@ import { collection, getDocs } from 'firebase/firestore';
 import { getStorage, ref, getDownloadURL } from 'firebase/storage';
 import { db } from './firebase';
 import * as FileSystem from 'expo-file-system';
-function GalleryScreen() {
-
-  const [images, setImages] = useState([])
-
-async function fetchImages (){
- try{
-   const snapshot = await getDocs(collection(db,'exhibitions'))
-   const data = snapshot.docs.map(doc => ({
-      id: doc.id,         
-  ...doc.data() 
-   }))
-   const imageLinks = data[1].images
-  
-   setImages(imageLinks)
-   return imageLinks
-
- } catch(err){
-   console.error(err)
- }
-}
+import { fetchFromDir } from './utility_functions/fetchFromDir';
 
 
+ function GalleryScreen() {
 
-async function saveFiles (){
-  try{
-    const urls = await fetchImages()
-    await Promise.all(
-      urls.map(async(url, index)=>{
-      const fileLink= FileSystem.documentDirectory + `artwork-${index}.jpg`
-      await FileSystem.downloadAsync(url, fileLink)
-      return fileLink
-      })
-    )
-  } catch(err){
-    console.error(err)
+      const [images, setImages] = useState([]);
+
+
+  const handleFetch = async () => {
+  const fetched = await fetchFromDir();
+  if (fetched) {
+    setImages(fetched);
   }
-}
 
-// useEffect(()=>{
-//   fetchImages()
-// }, [])
+};
 
-
-// const files = FileSystem.readDirectoryAsync(FileSystem.documentDirectory)
-//   .then(files => {
-//     console.log('📁 Files in storage:', files);
-//     return files
-//   })
-//   .catch(err => {
-//     console.error('❌ Error reading storage:', err);
-//   });
-
+ useEffect(() => {
+  console.log('Images updated:', images);
+}, [images]);
 
 
   return (
@@ -68,7 +35,7 @@ async function saveFiles (){
    <View style={styles.cont}>
 
     <Text style={styles.mainHeader}>Current artist Name Surname</Text>
-       <TouchableOpacity style={styles.displayButton} onPress={()=>fetchImages()}>
+       <TouchableOpacity style={styles.displayButton} onPress={()=>handleFetch()}>
         <Text style={styles.buttonText}>Start Displaying</Text>
       </TouchableOpacity>
    
